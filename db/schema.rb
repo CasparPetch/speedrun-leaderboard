@@ -10,13 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_29_151549) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_29_152216) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "categories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "game_id", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["game_id"], name: "index_categories_on_game_id"
+  end
 
   create_table "games", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
     t.datetime "updated_at", null: false
   end
+
+  add_foreign_key "categories", "games"
 end
