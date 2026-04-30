@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  category: one
+  time_ms: 1
+  position: 1
+  status: 1
+  video_url: MyString
+
+two:
+  user: two
+  category: two
+  time_ms: 1
+  position: 1
+  status: 1
+  video_url: MyString
