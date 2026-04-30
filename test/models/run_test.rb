@@ -11,6 +11,8 @@ class RunTest < ActiveSupport::TestCase
     @game = Game.create!(name: "Factorio")
 
     @category = @game.categories.create!(name: "Any%")
+
+    @moderator = GameModerator.create!(user: @user, game: @game)
   end
 
   test "verifying a submitted run marks it as verified when no other exists" do
@@ -23,7 +25,7 @@ class RunTest < ActiveSupport::TestCase
       video_url: "https://example.com/run"
     )
 
-    run.verify!
+    run.verify!(@user)
 
     assert run.verified?
   end
@@ -47,8 +49,8 @@ class RunTest < ActiveSupport::TestCase
       video_url: "https://example.com/fast"
     )
 
-    slower_run.verify!
-    faster_run.verify!
+    slower_run.verify!(@user)
+    faster_run.verify!(@user)
 
     assert slower_run.reload.obsoleted?
     assert faster_run.reload.verified?
@@ -73,8 +75,8 @@ class RunTest < ActiveSupport::TestCase
       video_url: "https://example.com/slow"
     )
 
-    faster_run.verify!
-    slower_run.verify!
+    faster_run.verify!(@user)
+    slower_run.verify!(@user)
 
     assert faster_run.reload.verified?
     assert slower_run.reload.obsoleted?
@@ -99,12 +101,41 @@ class RunTest < ActiveSupport::TestCase
       video_url: "https://example.com/fast"
     )
 
-    slower.verify!
-    faster.verify!
+    slower.verify!(@user)
+    faster.verify!(@user)
 
     assert_equal 1, faster.reload.position
     assert_equal 0, slower.reload.position
-end
+  end
+
+  
+  test "only a moderator can verify a run" do
+    runner = User.create!(username: "runner", email: "runner@example.com")
+    moderator = User.create!(username: "mod", email: "mod@example.com")
+
+    game = Game.create!(name: "Factorio")
+    category = game.categories.create!(name: "Any%")
+
+    GameModerator.create!(user: moderator, game: game)
+
+    run = Run.create!(
+      user: runner,
+      category: category,
+      time_ms: 150_000,
+      status: :submitted,
+      position: 0,
+      video_url: "https://example.com/run"
+    )
+
+    assert_raises(RuntimeError) do
+      run.verify!(runner)
+    end
+
+    assert_nothing_raised do
+      run.verify!(moderator)
+    end
+  end
+
 
 
 end

@@ -12,8 +12,16 @@ class Run < ApplicationRecord
   }
 
 
-  def verify!
-    raise "Run is not in submitted state" unless submitted?
+  def verify!(acting_user)
+    unless submitted?
+      raise "Run is not in submitted state"
+    end
+
+    game = category.game
+
+    unless acting_user.moderated_games.include?(game)
+      raise "User is not a moderator for this game"
+    end
 
     Run.transaction do
       existing = Run
@@ -35,7 +43,7 @@ class Run < ApplicationRecord
     end
   end
 
-  
+  private
   def recalculate_positions!
     verified_runs = Run
       .where(category_id: category_id, status: :verified)
