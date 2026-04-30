@@ -136,6 +136,31 @@ class RunTest < ActiveSupport::TestCase
     end
   end
 
+  test "leaderboard_for returns only verified runs ordered by position" do
+    slower = Run.create!(
+      user: @user,
+      category: @category,
+      time_ms: 200_000,
+      status: :submitted,
+      position: 0,
+      video_url: "slow"
+    )
 
+    faster = Run.create!(
+      user: @user,
+      category: @category,
+      time_ms: 150_000,
+      status: :submitted,
+      position: 0,
+      video_url: "fast"
+    )
 
+    slower.verify!(@user)
+    faster.verify!(@user)
+
+    leaderboard = Run.leaderboard_for(@category)
+
+    assert_equal [faster], leaderboard
+  end
+  
 end

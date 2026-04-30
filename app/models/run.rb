@@ -11,6 +11,23 @@ class Run < ApplicationRecord
     obsoleted: 4
   }
 
+  # Leaderboard scopes
+  
+  scope :verified_only, -> {
+    where(status: :verified)
+  }
+
+  scope :ordered_by_position, -> {
+    order(:position)
+  }
+
+  scope :leaderboard_for, ->(category) {
+    verified_only
+      .where(category: category)
+      .ordered_by_position
+  }
+
+
 
   def verify!(acting_user)
     unless submitted?
