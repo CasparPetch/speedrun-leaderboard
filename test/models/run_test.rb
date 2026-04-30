@@ -79,4 +79,32 @@ class RunTest < ActiveSupport::TestCase
     assert faster_run.reload.verified?
     assert slower_run.reload.obsoleted?
   end
+  
+  test "leaderboard positions are recalculated after verification" do
+    slower = Run.create!(
+      user: @user,
+      category: @category,
+      time_ms: 200_000,
+      status: :submitted,
+      position: 0,
+      video_url: "https://example.com/slow"
+    )
+
+    faster = Run.create!(
+      user: @user,
+      category: @category,
+      time_ms: 150_000,
+      status: :submitted,
+      position: 0,
+      video_url: "https://example.com/fast"
+    )
+
+    slower.verify!
+    faster.verify!
+
+    assert_equal 1, faster.reload.position
+    assert_equal 0, slower.reload.position
+end
+
+
 end

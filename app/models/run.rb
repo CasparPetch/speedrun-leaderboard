@@ -30,6 +30,20 @@ class Run < ApplicationRecord
       else
         update!(status: :verified)
       end
+
+      recalculate_positions!
     end
   end
+
+  
+  def recalculate_positions!
+    verified_runs = Run
+      .where(category_id: category_id, status: :verified)
+      .order(:time_ms)
+
+    verified_runs.each_with_index do |run, index|
+      run.update_column(:position, index + 1)
+    end
+  end
+
 end
