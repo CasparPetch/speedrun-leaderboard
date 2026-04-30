@@ -11,4 +11,25 @@ class Run < ApplicationRecord
     obsoleted: 4
   }
 
+
+  def verify!
+    raise "Run is not in submitted state" unless submitted?
+
+    Run.transaction do
+      existing = Run
+        .where(user_id: user_id, category_id: category_id)
+        .verified
+        .where.not(id: id)
+        .first
+
+      if existing
+        faster, slower = [self, existing].sort_by(&:time_ms)
+
+        slower.update!(status: :obsoleted, position: 0)
+        faster.update!(status: :verified)
+      else
+        update!(status: :verified)
+      end
+    end
+  end
 end
